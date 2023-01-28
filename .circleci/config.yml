@@ -66,6 +66,23 @@ jobs:
     steps:
       - checkout
       - print_pipeline_id_command
+  fail_on_purpose:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: failing on purpose
+          command: return 1
+  run_on_build_fail:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: I run when build fails
+          command: echo "The previous code failed, so it's rollback time"
+          when: on_fail
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
@@ -81,3 +98,5 @@ workflows:
           requires:
             - save_hello_world_output
       - print_the_pipeline_id
+      - fail_on_purpose
+      - run_on_build_fail
