@@ -73,7 +73,7 @@ jobs:
       - checkout
       - run:
           name: failing on purpose
-          command: return 1
+          command: exit 1
   run_on_build_fail:
     docker:
       - image: circleci/node:13.8.0
