@@ -36,7 +36,7 @@ jobs:
     steps:
       - checkout
       - persist_to_workspace:
-          root: /tmp/dir
+          root: .
           paths:
             - output.txt
       - run:
@@ -48,7 +48,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: /tmp/dir
+          at: .
       - run:
           name: print what is in output file
           command: cat output.txt
