@@ -98,5 +98,3 @@ workflows:
           requires:
             - save_hello_world_output
       - print_the_pipeline_id
-      - fail_on_purpose
-      - run_on_build_fail
