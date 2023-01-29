@@ -25,7 +25,7 @@ jobs:
           command: apk add --update ansible
       - run:
           name: Run playbook and configure server
-          command: ansible-playbook -i inventory main.yml --private-key ansible_pair.pem 
+          command: ansible-playbook -i inventory main.yml
 
 
 # Invoke jobs via workflows
