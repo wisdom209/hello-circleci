@@ -13,101 +13,24 @@ commands:
           name: prints outs the unique pipeline id
           command: echo $CIRCLE_WORKFLOW_ID
 jobs:
-  print_hello:
-    # Prints hello
+  configure_infrastructure:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints: ["40:ca:00:61:d4:59:ba:20:5a:58:93:a0:9f:31:bb:68"]
       - run:
-          name: "print_hello"
-          command: "echo Hello"
-  print_world:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
+          name: Install Ansible
+          command: apk add --update ansible
       - run:
-          name: print_world
-          command: "echo World"
-  print_my_name:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run:
-          name: print_my_name
-          command: echo $MY_NAME
-  save_hello_world_output:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run:
-          name: save hello world to file
-          command: echo "I am in output file" > output.txt
-      - persist_to_workspace:
-          root: .
-          paths:
-            - output.txt
-  print_output_file:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          name: print what is in output file
-          command: cat output.txt
-  print_the_pipeline_id:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - print_pipeline_id_command
-  fail_on_purpose:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run:
-          name: failing on purpose
-          command: exit 1
-  run_on_build_fail:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run:
-          name: I run when build fails
-          command: echo "The previous code failed, so it's rollback time"
-          when: on_fail
-  create_infrastructure:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: Create Cloudformation Stack
-          command: |
-            aws cloudformation deploy \
-              --template-file template.yml \
-              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
-              --region us-east-1
+          name: Run playbook and configure server
+          command: ansible-playbook -i inventory main.yml
+
+
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   say-hello-workflow:
     jobs:
-      - create_infrastructure
-      # - print_hello
-      # - print_world:
-      #     requires:
-      #       - print_hello
-      # - print_my_name
-      # - save_hello_world_output
-      # - print_output_file:
-      #     requires:
-      #       - save_hello_world_output
-      # - print_the_pipeline_id
+      - configure_infrastructure

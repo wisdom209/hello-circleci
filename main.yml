@@ -1,0 +1,9 @@
+---
+- name: Exercise to set up web server
+  hosts: all
+  user: ubuntu
+  become: true
+  become_method: sudo
+  become_user: root
+  roles:
+    - setup
