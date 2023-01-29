@@ -10,12 +10,15 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
+      - add_ssh_keys:
+          # You can get this ID in the section where you registered the SSH Key
+          fingerprints: ["40:ca:00:61:d4:59:ba:20:5a:58:93:a0:9f:31:bb:68"]
       - run:
           name: Install Ansible
           command: apk add --update ansible
       - run:
           name: Run playbook and configure server
-          command: ansible-playbook -i inventory main.yml --private-key ansible_pair.pem
+          command: ansible-playbook -i inventory main.yml
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
