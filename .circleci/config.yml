@@ -83,18 +83,31 @@ jobs:
           name: I run when build fails
           command: echo "The previous code failed, so it's rollback time"
           when: on_fail
+  create_infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Create Cloudformation Stack
+          command: |
+            aws cloudformation deploy \
+              --template-file template.yml
+              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+              --region us-east-1
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   say-hello-workflow:
     jobs:
-      - print_hello
-      - print_world:
-          requires:
-            - print_hello
-      - print_my_name
-      - save_hello_world_output
-      - print_output_file:
-          requires:
-            - save_hello_world_output
-      - print_the_pipeline_id
+      - create_infrastructure
+      # - print_hello
+      # - print_world:
+      #     requires:
+      #       - print_hello
+      # - print_my_name
+      # - save_hello_world_output
+      # - print_output_file:
+      #     requires:
+      #       - save_hello_world_output
+      # - print_the_pipeline_id
