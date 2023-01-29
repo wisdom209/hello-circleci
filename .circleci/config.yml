@@ -27,7 +27,6 @@ jobs:
           name: Run playbook and configure server
           command: ansible-playbook -i inventory main.yml
 
-
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
