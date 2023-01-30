@@ -15,7 +15,7 @@ jobs:
           fingerprints: ["40:ca:00:61:d4:59:ba:20:5a:58:93:a0:9f:31:bb:68"]
       - run:
           name: Install Ansible
-          command: python -m pip3 install ansible
+          command: python -m pip install ansible
       - run:
           name: Run playbook and configure server
           command: ansible-playbook -i inventory main.yml
