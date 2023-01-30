@@ -65,12 +65,13 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Execute bucket.yml - Create cloud formation stack
+          name: Execute bucket.yml - Create Cloudformation Stack
           command: |
             aws cloudformation deploy \
             --template-file bucket.yml \
-            --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7}
-            --parameter-overrides MyBucketName=mybucket-${CIRCLE_WORKFLOW_ID:0:7}
+            --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7} \
+            --parameter-overrides MyBucketName="mybucket-${CIRCLE_WORKFLOW_ID:0:7}"
+      # Uncomment the step below if yoou wish to upload all contents of the current directory to the S3 bucket
       - run: aws s3 sync . s3://mybucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
   # Fetch and save the pipeline ID (bucket ID) responsible for the last release.
   get_last_deployment_id:
@@ -89,8 +90,8 @@ jobs:
           root: ~/
           paths:
             - textfile.txt
-# Executes the cloudfront.yml template that will modify the existing CloudFront Distribution, change its target from the old bucket to the new bucket - `mybucket-${CIRCLE_WORKFLOW_ID:0:7}`. 
-# Notice here we use the stack name `production-distro` which is the same name we used while deploying to the S3 bucket manually.
+  # Executes the cloudfront.yml template that will modify the existing CloudFront Distribution, change its target from the old bucket to the new bucket - `mybucket-${CIRCLE_WORKFLOW_ID:0:7}`.
+  # Notice here we use the stack name `production-distro` which is the same name we used while deploying to the S3 bucket manually.
   promote_to_production:
     docker:
       - image: amazon/aws-cli
@@ -103,7 +104,7 @@ jobs:
             --template-file cloudfront.yml \
             --stack-name production-distro \
             --parameter-overrides PipelineID="mybucket-${CIRCLE_WORKFLOW_ID:0:7}"
-# Destroy the previous production version's S3 bucket and CloudFormation stack. 
+  # Destroy the previous production version's S3 bucket and CloudFormation stack.
   clean_up_old_front_end:
     docker:
       - image: amazon/aws-cli
@@ -113,9 +114,9 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Destroy the previous S3 bucket and CloudFormation stack. 
+          name: Destroy the previous S3 bucket and CloudFormation stack.
           # Use $OldBucketID environment variable or mybucket644752792305 below.
-          # Similarly, you can create and use $OldStackID environment variable in place of production-distro 
+          # Similarly, you can create and use $OldStackID environment variable in place of production-distro
           command: |
             export OldBucketID=$(cat ~/textfile.txt)
             aws s3 rm "s3://${OldBucketID}" --recursive
@@ -126,7 +127,7 @@ workflows:
     jobs:
       - create_and_deploy_front_end
       - promote_to_production:
-          requires: 
+          requires:
             - create_and_deploy_front_end
       - get_last_deployment_id
       - clean_up_old_front_end:
