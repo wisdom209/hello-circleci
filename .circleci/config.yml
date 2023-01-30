@@ -4,7 +4,27 @@ version: 2.1
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+commands:
+  destroy_environment:
+    steps:
+      - run:
+          name: Destroy environment
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
 jobs:
+  create_infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Create Cloudformation Stack
+          command: |
+            aws cloudformation deploy \
+              --template-file template.yml \
+              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+              --region us-east-1
   configure_infrastructure:
     docker:
       - image: cimg/python:3.10
@@ -30,17 +50,19 @@ jobs:
       - run:
           name: smoke test
           command: |
-            URL="https://blog.udacity.com/"  
-            # Test the website exists
+            URL="https://blog.uadacity.com/"  
+            # Test the website exists, fail intentionally to test the destroy environment command
             if curl -s --head ${URL}
             then
               return 0
             else
               return 1
             fi
+      - destroy_environment
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   say-hello-workflow:
     jobs:
+      - create_infrastructure
       - smoke_test
